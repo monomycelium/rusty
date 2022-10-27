@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use std::io;
 
 fn main() {
-    println!("guess the number!, made using rust.");
+    println!("guess the number!, a game written in rust.");
 
     let secret_number = rand::thread_rng().gen_range(1..=10);
 
@@ -17,9 +17,9 @@ fn main() {
         };
 
         match guess.cmp(&secret_number) {
-            Ordering::Less => println!("too small"),
+            Ordering::Less    => println!("too small"),
             Ordering::Greater => println!("too big"),
-            Ordering::Equal => {
+            Ordering::Equal   => {
                 println!("you win!");
                 break;
             }
