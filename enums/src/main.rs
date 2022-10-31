@@ -79,3 +79,29 @@ fn main() {
     println!("{:?}", add(five));
     println!("{:?}", add(None));
 } */
+
+#[derive(Debug)]
+enum State {
+    Alaska,
+    Georgia,
+}
+
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter(State),
+}
+
+fn main() {
+    let coin = Coin::Penny;
+    let mut count = 0;
+
+    if let Coin::Quarter(state) = coin {
+        println!("this quarter comes from {:?}.", state);
+    } else {
+        count += 1;
+    }
+
+    println!("{}", count);
+}
