@@ -40,6 +40,7 @@ fn print_file(file: File) {
     println!("{}", contents);
 } */
 
+/*
 use std::fs::File;
 use std::io::{self, Read};
 
@@ -57,5 +58,90 @@ fn main() {
     match c1 {
         Ok(c) => println!("{}", c),
         Err(e) => panic!("can't access file: {:?}", e),
+    }
+} */
+
+// after the big break (forgive me for taking so long; i was busy adopting kate):
+
+/*
+use std::fs::File;
+use std::io::ErrorKind;
+
+fn main() {
+    let path = "readme.md";
+    let result = File::open(path);
+
+//     let file = match result {
+//         Ok(f) => f,
+//         Err(e) => panic!("cannot open file: {:?}.", {e}),
+//     };
+
+    let file = match result {
+        Ok(f) => f,
+        Err(e) => match e.kind() {
+            ErrorKind::NotFound => File::create(path).unwrap_or_else(|e| { panic!("cannot create file: {:?}.", e) }),
+            ErrorKind::PermissionDenied => panic!("unable to create file: permission denied."),
+            other_error => panic!("unable to open file: {:?}.", other_error),
+        }
+    };
+
+//     let file = File::open(path)
+//         .expect("is `readme.md` at the root of this cargo project?");
+}*/
+
+/*
+use std::fs::File;
+use std::io::{self, Read};
+
+fn read_file() -> Result<String, io::Error> {
+    let path = "readme.md";
+    let result = File::open(path);
+
+    let mut file = match result {
+        Ok(f) => file,
+        Err(e) => return Err(e),
+    };
+
+    let mut content = String::new();
+
+    match file.read_to_string(&mut content) {
+        Ok(_) => Ok(content),
+        Err(e) => Err(e),
+    }
+}*/
+
+// use std::fs;
+// use std::io;
+use std::fs::File;
+use std::io::{self, Read};
+
+fn read_file() -> Result<String, io::Error> {
+    let path = "readme.md";
+    let mut content = String::new();
+
+    File::open(path)?.read_to_string(&mut content)?;
+
+    Ok(content)
+
+//     fs::read_to_string(path)
+}
+
+fn last_char(text: &str) -> Option<char> {
+    text.lines().next()?.chars().last()
+}
+
+fn main() {
+    let c1 = read_file();
+
+    match c1 {
+        Ok(c) => print!("{}", c),
+        Err(e) => panic!("can't access file: {:?}", e),
+    }
+
+    let c2 = last_char("hello world!");
+
+    match c2 {
+        Some(c) => println!("{}", c),
+        None => println!("whaaat?"),
     }
 }
