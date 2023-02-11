@@ -1,6 +1,7 @@
 use rand::Rng;
 use std::cmp::Ordering;
 use std::io;
+use std::io::Write;
 
 fn main() {
     println!("guess the number!, a game written in rust.");
@@ -9,6 +10,7 @@ fn main() {
 
     loop {
         println!("enter your guess.");
+        io::stdout().flush();
         let mut guess = String::new();
         io::stdin().read_line(&mut guess).expect("failed to read");
         let guess: u32 = match guess.trim().parse() {
