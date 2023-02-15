@@ -29,6 +29,5 @@ fn main() {
 fn read_float() -> f64 {
     let mut input = String::new();
     io::stdin().read_line(&mut input).expect("failed to read line.");
-    let float = input.trim().parse().expect("invalid number.");
-    float
+    input.trim().parse::<f64>().expect("invalid number.")
 }
