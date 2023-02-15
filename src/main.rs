@@ -117,5 +117,28 @@ fn main() {
     struct Color(i32, i32, i32);
     let black: Color = Color(0, 0, 0);
     println!("{}", black.0);
+
+    // methods
+    struct Rectangle {
+        width: u32,
+        height: u32,
+    }
+
+    impl Rectangle {
+        fn area(&self) -> u32 {
+            self.width * self.height
+        }
+
+        fn perimeter(&self) -> u32 {
+            2 * (self.width + self.height)
+        }
+
+        fn square(size: u32) -> Self {
+            Rectangle { width: size, height: size }
+        }
+    }
+
+    let square_one: Rectangle = Rectangle::square(36);
+    println!("area of square one:\t\t{}\nperimeter of square one:\t{}", square_one.area(), square_one.perimeter());
     */
 }
