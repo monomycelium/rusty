@@ -111,15 +111,13 @@ fn read_file() -> Result<String, io::Error> {
 }*/
 
 // use std::fs;
-// use std::io;
+
 use std::fs::File;
 use std::io::{self, Read};
 
 fn read_file() -> Result<String, io::Error> {
-    let path = "readme.md";
-    let mut content = String::new();
-
-    File::open(path)?.read_to_string(&mut content)?;
+    let mut content: String = String::new();
+    File::open("readme.md")?.read_to_string(&mut content)?;
 
     Ok(content)
 
@@ -131,17 +129,13 @@ fn last_char(text: &str) -> Option<char> {
 }
 
 fn main() {
-    let c1 = read_file();
-
-    match c1 {
+    match read_file() {
         Ok(c) => print!("{}", c),
         Err(e) => panic!("can't access file: {:?}", e),
     }
 
-    let c2 = last_char("hello world!");
-
-    match c2 {
-        Some(c) => println!("{}", c),
+    match last_char("hello world!") {
+        Some(c) => println!("last line: {}", c),
         None => println!("whaaat?"),
     }
 }

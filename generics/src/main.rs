@@ -47,7 +47,7 @@ fn main() {
     let p2: Point<f32> = Point { x: 5.0, y: 4.0 };
     println!("distance from origin: {}", p2.distance_from_origin());
 } */
-
+/*
 struct Point<X1, Y1> {
     x: X1,
     y: Y1,
@@ -69,4 +69,28 @@ fn main() {
     let p3 = p1.mix(p2);
 
     println!("({}, {})", p3.x, p3.y);
+} */
+
+// using generics in functions
+
+use std::cmp::PartialOrd;
+
+fn largest<T: PartialOrd>(list: &[T]) -> &T {
+    let mut largest = &list[0];
+
+    for item in list {
+        if item > largest {
+            largest = item;
+        }
+    }
+
+    largest
+}
+
+fn main() {
+    let numeric_list: [i32; 6] = [5, 2, 9, 3, 3, 6];
+    println!("largest number:\t\t{}", largest(&numeric_list));
+
+    let numeric_char: [char; 6] = ['j', 'a', 'y', 'd', 'e', 'n'];
+    println!("largest character:\t{}", largest(&numeric_char));
 }

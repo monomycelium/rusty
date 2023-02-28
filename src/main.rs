@@ -1,3 +1,4 @@
+/*
 fn main() {
     println!("hello, this is a rusty project.");
     // data types
@@ -141,4 +142,29 @@ fn main() {
     let square_one: Rectangle = Rectangle::square(36);
     println!("area of square one:\t\t{}\nperimeter of square one:\t{}", square_one.area(), square_one.perimeter());
     */
-}
+} */
+
+// count the number of `n`s:
+/*
+use std::io::{self, Write};
+
+fn main() {
+    let mut string: String = String::new();
+    print!("enter a string:\t");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut string).expect("failed to read line.");
+
+    let mut count: u8 = 0;
+    let mut vowels: u8 = 0;
+
+    for char in string.chars() {
+        match char {
+            'n' => count += 1,
+            'a'|'e'|'i'|'o'|'u' => vowels += 1,
+            _ => continue,
+        };
+    }
+
+    println!("`n`s:\t\t{}", count);
+    println!("vowels:\t\t{}", vowels);
+} */
