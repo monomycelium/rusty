@@ -145,7 +145,7 @@ fn main() {
 } */
 
 // count the number of `n`s:
-/*
+
 use std::io::{self, Write};
 
 fn main() {
@@ -167,4 +167,4 @@ fn main() {
 
     println!("`n`s:\t\t{}", count);
     println!("vowels:\t\t{}", vowels);
-} */
+}
