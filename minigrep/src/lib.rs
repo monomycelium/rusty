@@ -51,16 +51,21 @@ pub fn search<'a>(pattern: &str, contents: &'a str) -> Vec<&'a str> {
 }
 
 pub fn search_case_insensitve<'a>(pattern: &str, contents: &'a str) -> Vec<&'a str> {
-    let pattern: String = pattern.to_lowercase();
-    let mut results: Vec<&str> = Vec::new();
+    // let pattern: String = pattern.to_lowercase();
+    // let mut results: Vec<&str> = Vec::new();
 
-    for line in contents.lines() {
-        if line.to_lowercase().contains(&pattern) {
-            results.push(line)
-        }
-    }
+    // for line in contents.lines() {
+    //     if line.to_lowercase().contains(&pattern) {
+    //         results.push(line)
+    //     }
+    // }
 
-    results
+    // results
+
+    contents
+        .lines()
+        .filter(|line| line.to_lowercase().contains(&pattern.to_lowercase()))
+        .collect()
 }
 
 #[cfg(test)]

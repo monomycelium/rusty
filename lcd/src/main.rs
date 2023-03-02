@@ -1,13 +1,9 @@
-use charlcd::Screen;
-use std::io::Write;
+use pwr_hd44780::Hd44780;
 
-fn main() -> std::io::Result<()> {
-    let mut screen = Screen::default()?;
+fn main() {
+    let lcd_bus = pwr_hd44780::I2CBus::new("/dev/i2c-1", 0x3f).unwrap();
+    let mut lcd = pwr_hd44780::DirectLcd::new(Box::new(lcd_bus),16, 2).unwrap();
 
-    screen.clear()?;
-    screen.write(b"hello, world!")?;
-    screen.flash_backlight()?;
-    screen.flush()?; // send all the previous commands to the driver at once
-
-    Ok(())
+    lcd.clear().unwrap();
+    lcd.print("hello world").unwrap();
 }
