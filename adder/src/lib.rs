@@ -5,13 +5,13 @@ use rayon::prelude::*;
 
 pub fn sum_primitive(start: u64, end: u64) -> u64 {
     let vector: Vec<u64> = (start..=end).collect();
-    
+
     vector.iter().sum()
 }
 
 pub fn sum_primitive_par(start: u64, end: u64) -> u64 {
     let vector: Vec<u64> = (start..=end).collect();
-    
+
     vector.par_iter().sum()
 }
 

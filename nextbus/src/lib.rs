@@ -1,7 +1,7 @@
-use lta::{LTAClient, Client, Bus, BusRequests, models::bus::bus_arrival, models::bus_enums};
-use chrono::{NaiveDateTime, Local, Duration};
+use chrono::{Duration, Local, NaiveDateTime};
 use clap::Parser;
-use colored::{Colorize, ColoredString};
+use colored::{ColoredString, Colorize};
+use lta::{models::bus::bus_arrival, models::bus_enums, Bus, BusRequests, Client, LTAClient};
 use std::error::Error;
 
 #[derive(Parser)]
@@ -36,9 +36,19 @@ pub fn run(input: Input) -> Result<(), Box<dyn Error>> {
 
     if let Some(service_no) = input.service_no {
         if input.detailed {
-            next_bus_detailed(&client, input.times, input.bus_stop_code, service_no.as_str())?;
+            next_bus_detailed(
+                &client,
+                input.times,
+                input.bus_stop_code,
+                service_no.as_str(),
+            )?;
         } else {
-            next_bus(&client, input.times, input.bus_stop_code, service_no.as_str())?;
+            next_bus(
+                &client,
+                input.times,
+                input.bus_stop_code,
+                service_no.as_str(),
+            )?;
         }
     } else {
         if input.detailed {
@@ -52,8 +62,14 @@ pub fn run(input: Input) -> Result<(), Box<dyn Error>> {
 }
 
 #[tokio::main]
-pub async fn next_bus<'a>(client: &LTAClient, times: u8, bus_stop_code: u32, service_no: &'a str) -> Result<(), Box<dyn Error>> {
-    let bus_arrival: bus_arrival::BusArrivalResp = Bus::get_arrival(&client, bus_stop_code, service_no).await?;
+pub async fn next_bus<'a>(
+    client: &LTAClient,
+    times: u8,
+    bus_stop_code: u32,
+    service_no: &'a str,
+) -> Result<(), Box<dyn Error>> {
+    let bus_arrival: bus_arrival::BusArrivalResp =
+        Bus::get_arrival(&client, bus_stop_code, service_no).await?;
 
     if let Some(service) = bus_arrival.services.first() {
         let now: NaiveDateTime = Local::now().naive_local();
@@ -61,14 +77,19 @@ pub async fn next_bus<'a>(client: &LTAClient, times: u8, bus_stop_code: u32, ser
 
         println!("{}:", service.service_no);
 
-        for next in service.next_bus.iter().flatten().map(|next_bus: &bus_arrival::NextBus| next_bus.est_arrival.naive_local()) {
-            if now > next  {
+        for next in service
+            .next_bus
+            .iter()
+            .flatten()
+            .map(|next_bus: &bus_arrival::NextBus| next_bus.est_arrival.naive_local())
+        {
+            if now > next {
                 println!("arriving")
             } else {
                 let diff: Duration = next - now;
                 println!("{:02}:{:02}", diff.num_minutes(), diff.num_seconds() % 60);
             }
-            
+
             count += 1;
 
             if count == times {
@@ -87,8 +108,14 @@ pub async fn next_bus<'a>(client: &LTAClient, times: u8, bus_stop_code: u32, ser
 }
 
 #[tokio::main]
-pub async fn next_bus_detailed<'a>(client: &LTAClient, times: u8, bus_stop_code: u32, service_no: &'a str) -> Result<(), Box<dyn Error>> {
-    let bus_arrival: bus_arrival::BusArrivalResp = Bus::get_arrival(&client, bus_stop_code, service_no).await?;
+pub async fn next_bus_detailed<'a>(
+    client: &LTAClient,
+    times: u8,
+    bus_stop_code: u32,
+    service_no: &'a str,
+) -> Result<(), Box<dyn Error>> {
+    let bus_arrival: bus_arrival::BusArrivalResp =
+        Bus::get_arrival(&client, bus_stop_code, service_no).await?;
 
     if let Some(service) = bus_arrival.services.first() {
         let mut count: u8 = 0;
@@ -96,8 +123,17 @@ pub async fn next_bus_detailed<'a>(client: &LTAClient, times: u8, bus_stop_code:
         println!("{}:", service.service_no);
 
         for next in service.next_bus.iter().flatten() {
-            println!("{}  {} {}", load_match(diff(next.est_arrival.naive_local()), &next.load), if next.feature == Some(bus_enums::BusFeature::WheelChairAccessible) { " ♿" } else { "" }, type_match(&next.bus_type));
-            
+            println!(
+                "{}  {} {}",
+                load_match(diff(next.est_arrival.naive_local()), &next.load),
+                if next.feature == Some(bus_enums::BusFeature::WheelChairAccessible) {
+                    " ♿"
+                } else {
+                    ""
+                },
+                type_match(&next.bus_type)
+            );
+
             count += 1;
             if count == times {
                 break;
@@ -116,18 +152,24 @@ pub async fn next_bus_detailed<'a>(client: &LTAClient, times: u8, bus_stop_code:
 
 #[tokio::main]
 pub async fn next_busses<'a>(client: &LTAClient, bus_stop_code: u32) -> Result<(), Box<dyn Error>> {
-    let bus_arrival: bus_arrival::BusArrivalResp = Bus::get_arrival(&client, bus_stop_code, None).await?;
+    let bus_arrival: bus_arrival::BusArrivalResp =
+        Bus::get_arrival(&client, bus_stop_code, None).await?;
     let now: NaiveDateTime = Local::now().naive_local();
 
     if bus_arrival.services.len() == 0 {
         Err("no bus in operation; try entering a different bus stop".into())
-    } else {        
+    } else {
         for service in bus_arrival.services {
             if service.next_bus.iter().flatten().count() > 0 {
                 println!("{}:", service.service_no);
-                
-                for next in service.next_bus.iter().flatten().map(|next_bus: &bus_arrival::NextBus| next_bus.est_arrival.naive_local()) {
-                    if now > next  {
+
+                for next in service
+                    .next_bus
+                    .iter()
+                    .flatten()
+                    .map(|next_bus: &bus_arrival::NextBus| next_bus.est_arrival.naive_local())
+                {
+                    if now > next {
                         println!("arriving")
                     } else {
                         let diff: Duration = next - now;
@@ -144,18 +186,31 @@ pub async fn next_busses<'a>(client: &LTAClient, bus_stop_code: u32) -> Result<(
 }
 
 #[tokio::main]
-pub async fn next_busses_detailed<'a>(client: &LTAClient, bus_stop_code: u32) -> Result<(), Box<dyn Error>> {
-    let bus_arrival: bus_arrival::BusArrivalResp = Bus::get_arrival(&client, bus_stop_code, None).await?;
+pub async fn next_busses_detailed<'a>(
+    client: &LTAClient,
+    bus_stop_code: u32,
+) -> Result<(), Box<dyn Error>> {
+    let bus_arrival: bus_arrival::BusArrivalResp =
+        Bus::get_arrival(&client, bus_stop_code, None).await?;
 
     if bus_arrival.services.len() == 0 {
         Err("no bus in operation; try entering a different bus stop".into())
-    } else {        
+    } else {
         for service in bus_arrival.services {
             if service.next_bus.iter().flatten().count() > 0 {
                 println!("{}:", service.service_no);
-                
+
                 for next in service.next_bus.iter().flatten() {
-                    println!("{}  {} {}", load_match(diff(next.est_arrival.naive_local()), &next.load), if next.feature == Some(bus_enums::BusFeature::WheelChairAccessible) { " ♿" } else { "" }, type_match(&next.bus_type));
+                    println!(
+                        "{}  {} {}",
+                        load_match(diff(next.est_arrival.naive_local()), &next.load),
+                        if next.feature == Some(bus_enums::BusFeature::WheelChairAccessible) {
+                            " ♿"
+                        } else {
+                            ""
+                        },
+                        type_match(&next.bus_type)
+                    );
                 }
 
                 println!();
@@ -173,7 +228,11 @@ fn diff(est: NaiveDateTime) -> String {
         format!("arriving")
     } else {
         let diff: Duration = est - now;
-        format!("{:02}:{:02}   ", diff.num_minutes(), diff.num_seconds() % 60)
+        format!(
+            "{:02}:{:02}   ",
+            diff.num_minutes(),
+            diff.num_seconds() % 60
+        )
     }
 }
 
@@ -192,7 +251,8 @@ fn type_match(bus_type: &bus_enums::BusType) -> ColoredString {
         bus_enums::BusType::DoubleDecker => "double-decker",
         bus_enums::BusType::Bendy => "bendy",
         bus_enums::BusType::Unknown => "unknown",
-    }.dimmed()
+    }
+    .dimmed()
 }
 
 /*
