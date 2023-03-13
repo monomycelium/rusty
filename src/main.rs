@@ -53,16 +53,16 @@ fn main() {
     // let two: &str = &x[6..];
 
     // println!("one: {}, two: {}.", one, two);
-    
+
     fn first_word(s: &String) -> &str {
         let bytes: &[u8] = s.as_bytes();
-    
+
         for (i, &item) in bytes.iter().enumerate() {
             if item == b' ' {
                 return &s[..i];
             }
         }
-    
+
         &s[..]
     }
 
@@ -84,13 +84,13 @@ fn main() {
     fn love(person: &Human) {
         if person.lovable {
             println!("it turns out that {} is extremely lovable.", person.name);
-    
+
             if person.age >= 18 && person.gender == 'm' {
                 println!("ask him out!");
             }
         } else {
             println!("step out of your delusions, for {} is not as lovely as you thought.", person.name);
-        }    
+        }
     }
 
     let mut aden: Human = Human { name: String::from("aden"), gender: 'm', age: 13, lovable: true };
@@ -152,7 +152,9 @@ fn main() {
     let mut string: String = String::new();
     print!("enter a string:\t");
     io::stdout().flush().unwrap();
-    io::stdin().read_line(&mut string).expect("failed to read line.");
+    io::stdin()
+        .read_line(&mut string)
+        .expect("failed to read line.");
 
     let mut count: u8 = 0;
     let mut vowels: u8 = 0;
@@ -160,7 +162,7 @@ fn main() {
     for char in string.chars() {
         match char {
             'n' => count += 1,
-            'a'|'e'|'i'|'o'|'u' => vowels += 1,
+            'a' | 'e' | 'i' | 'o' | 'u' => vowels += 1,
             _ => continue,
         };
     }
