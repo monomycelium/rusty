@@ -1,5 +1,4 @@
 use chrono::{Local, NaiveDate};
-use figlet_rs::FIGfont;
 use std::{
     env,
     error::Error,
@@ -187,11 +186,11 @@ impl App {
 pub fn greet_lewis() -> Result<(), Box<dyn Error>> {
     let mut out = BufWriter::new(io::stdout());
 
-    let font: FIGfont = FIGfont::from_file("resources/starwars.flf")?;
-    let figure: Option<figlet_rs::FIGure> = font.convert("lewis!");
-    if let Some(thing) = figure {
-        writeln!(out, "{}", thing)?;
-    }
+    writeln!(out, " _               _")?;
+    writeln!(out, "| | _____      _(_)___")?;
+    writeln!(out, "| |/ _ \\ \\ /\\ / | / __|")?;
+    writeln!(out, "| |  __/\\ V  V /| \\__ \\")?;
+    writeln!(out, "|_|\\___| \\_/\\_/ |_|___/")?;
 
     writeln!(out, "a birthday present from mashrafi, written in Rust.")?;
     out.flush()?;
@@ -203,7 +202,7 @@ pub fn greet_lewis() -> Result<(), Box<dyn Error>> {
             out.flush()?;
             thread::sleep(Duration::from_millis(500));
 
-            write!(out, "I wrote you this program to keep track of a bucket list that I've created for us.\nYou can add and remove items, and mark them as complete or incomplete. Are you ready? (press enter) ")?;
+            write!(out, "Here's a program to keep track of a bucket list that I've created for us.\nYou can add and remove items, and mark them as complete or incomplete.\nAre you ready? (press enter) ")?;
             out.flush()?;
 
             let mut buffer: Vec<u8> = Vec::new();
@@ -228,7 +227,15 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     let mut app: App = if app_path.exists() {
         App::load(&app_path)?
     } else {
-        App::load(&Path::new("resources/bucket_list"))?
+        App::from_str(
+            "[x] go cycling together
+[x] have lunch together
+[ ] go for a picnic
+[ ] camp together
+[ ] wander in the woods
+[ ] climb bukit timah hill
+",
+        )?
     };
 
     loop {
