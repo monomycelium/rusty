@@ -95,7 +95,7 @@ impl FromStr for App {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let items = s
             .lines()
-            .map(|line| line.parse::<Task>())
+            .map(|line| Ok::<Task, Self::Err>(line.parse::<Task>()?))
             .collect::<Result<_, _>>()?;
 
         Ok(App::from(items))
@@ -175,7 +175,6 @@ impl App {
         OpenOptions::new()
             .read(true)
             .write(true)
-            .create(true)
             .open(&path)?
             .read_to_string(&mut data)?;
 
