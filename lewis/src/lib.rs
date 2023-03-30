@@ -4,7 +4,7 @@ use std::{
     error::Error,
     fmt::Display,
     fs::{self, OpenOptions},
-    io::{self, BufWriter, Read, Write},
+    io::{self, Read, Write},
     path::Path,
     str::FromStr,
     thread,
@@ -25,14 +25,15 @@ pub struct Task {
     pub description: String,
 }
 
-impl Task {
-    pub fn from(description: String) -> Self {
+impl From<String> for Task {
+    fn from(description: String) -> Self {
         Task {
             completed: false,
             description,
         }
     }
-
+}
+impl Task {
     pub fn toggle(&mut self) {
         self.completed = !self.completed;
     }
@@ -69,7 +70,8 @@ impl FromStr for Task {
 
 pub enum InputMode {
     Normal,
-    Editing,
+    Creating,
+    Editing(usize),
 }
 
 struct App {
@@ -96,14 +98,14 @@ impl FromStr for App {
         let items = s
             .lines()
             .map(|line| Ok::<Task, Self::Err>(line.parse::<Task>()?))
-            .collect::<Result<_, _>>()?;
+            .collect::<Result<Vec<_>, _>>()?;
 
         Ok(App::from(items))
     }
 }
 
-impl App {
-    pub fn from(tasks: Vec<Task>) -> Self {
+impl From<Vec<Task>> for App {
+    fn from(tasks: Vec<Task>) -> Self {
         App {
             tasks,
             state: ListState::default(),
@@ -111,7 +113,9 @@ impl App {
             mode: InputMode::Normal,
         }
     }
+}
 
+impl App {
     pub fn next(&mut self) {
         self.state
             .select(Some(if let Some(i) = self.state.selected() {
@@ -145,18 +149,18 @@ impl App {
     }
 
     pub fn toggle_task(&mut self) {
-        let i: usize = if let Some(i) = self.state.selected() {
-            if i >= self.tasks.len() {
-                0
-            } else {
-                i
-            }
-        } else {
-            0
-        };
+        let len: usize = self.tasks.len();
 
-        self.tasks[i].toggle();
+        if len > 0 {
+            if let Some(i) = self.state.selected() {
+                self.tasks[i].toggle();
+            }
+        }
     }
+
+    //    pub fn selected_mut(&mut self) -> Option<&mut Task> {
+    //        Some(&mut self.tasks[self.state.selected()?])
+    //    }
 
     pub fn save<P>(&self, path: P) -> Result<(), Box<dyn Error>>
     where
@@ -183,26 +187,27 @@ impl App {
 }
 
 pub fn greet_lewis() -> Result<(), Box<dyn Error>> {
-    let mut out = BufWriter::new(io::stdout());
+    println!(
+        " _               _
+| | _____      _(_)___
+| |/ _ \\ \\ /\\ / | / __|
+| |  __/\\ V  V /| \\__ \\
+|_|\\___| \\_/\\_/ |_|___/
 
-    writeln!(out, " _               _")?;
-    writeln!(out, "| | _____      _(_)___")?;
-    writeln!(out, "| |/ _ \\ \\ /\\ / | / __|")?;
-    writeln!(out, "| |  __/\\ V  V /| \\__ \\")?;
-    writeln!(out, "|_|\\___| \\_/\\_/ |_|___/")?;
-
-    writeln!(out, "a birthday present from mashrafi, written in Rust.")?;
-    out.flush()?;
-    thread::sleep(Duration::from_millis(500));
+a birthday present from mashrafi."
+    );
 
     if let Some(date) = NaiveDate::from_ymd_opt(2023, 03, 31) {
+        thread::sleep(Duration::from_millis(1000));
         if Local::now().date_naive() <= date {
-            writeln!(out, "\nHappy birthday, Lewis!")?;
-            out.flush()?;
-            thread::sleep(Duration::from_millis(500));
+            let text: &str = "Happy birthday, Lewis!\nHere's a program to keep track of a bucket list that I've created for us.\nAre you ready? (press enter) ";
 
-            write!(out, "Here's a program to keep track of a bucket list that I've created for us.\nYou can add and remove items, and mark them as complete or incomplete.\nAre you ready? (press enter) ")?;
-            out.flush()?;
+            for word in text.split_whitespace() {
+                print!("{word} ");
+                io::stdout().flush()?;
+
+                thread::sleep(Duration::from_millis(word.len() as u64 * 50 as u64))
+            }
 
             let mut buffer: Vec<u8> = Vec::new();
             io::stdin().read(&mut buffer)?;
@@ -226,15 +231,20 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     let mut app: App = if app_path.exists() {
         App::load(&app_path)?
     } else {
-        App::from_str(
-            "[x] go cycling together
-[x] have lunch together
-[ ] go for a picnic
-[ ] camp together
-[ ] wander in the woods
-[ ] climb bukit timah hill
-",
-        )?
+        App::from(vec![
+            Task {
+                description: String::from("go cycling together"),
+                completed: true,
+            },
+            Task {
+                description: String::from("have lunch together"),
+                completed: true,
+            },
+            Task::from(String::from("go for a picnic")),
+            Task::from(String::from("camp together")),
+            Task::from(String::from("wander in the woods")),
+            Task::from(String::from("climb bukit timah hill")),
+        ])
     };
 
     loop {
@@ -280,16 +290,29 @@ pub fn run() -> Result<(), Box<dyn Error>> {
                         Span::styled("q", Style::default().add_modifier(Modifier::BOLD)),
                         Span::raw(" to quit, "),
                         Span::styled("space", Style::default().add_modifier(Modifier::BOLD)),
-                        Span::raw(" to toggle, "),
+                        Span::raw(" to toggle task, "),
                         Span::styled("a", Style::default().add_modifier(Modifier::BOLD)),
-                        Span::raw(" to add task, and "),
+                        Span::raw(" to add task, "),
+                        Span::styled("e", Style::default().add_modifier(Modifier::BOLD)),
+                        Span::raw(" to edit task, "),
+                        Span::styled("w", Style::default().add_modifier(Modifier::BOLD)),
+                        Span::raw(" to save, and "),
                         Span::styled("d", Style::default().add_modifier(Modifier::BOLD)),
                         Span::raw(" to delete task."),
                     ]
                 }
-                InputMode::Editing => {
+                InputMode::Creating => {
                     vec![
                         Span::raw("enter task to add. press "),
+                        Span::styled("escape", Style::default().add_modifier(Modifier::BOLD)),
+                        Span::raw(" to stop editing, and "),
+                        Span::styled("enter", Style::default().add_modifier(Modifier::BOLD)),
+                        Span::raw(" to write the task."),
+                    ]
+                }
+                InputMode::Editing(_) => {
+                    vec![
+                        Span::raw("edit task. press "),
                         Span::styled("escape", Style::default().add_modifier(Modifier::BOLD)),
                         Span::raw(" to stop editing, and "),
                         Span::styled("enter", Style::default().add_modifier(Modifier::BOLD)),
@@ -305,7 +328,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
             f.render_widget(message, chunks[1]);
 
             match app.mode {
-                InputMode::Editing => {
+                InputMode::Editing(_) | InputMode::Creating => {
                     f.render_widget(Paragraph::new(app.input.as_ref()), chunks[2]);
                     f.set_cursor(chunks[2].x + app.input.len() as u16, chunks[2].y);
                 }
@@ -325,14 +348,43 @@ pub fn run() -> Result<(), Box<dyn Error>> {
                     Key::Char('k') | Key::Up => app.next(),
                     Key::Char(' ') => app.toggle_task(),
                     Key::Char('d') => app.remove_task(),
-                    Key::Char('a') => app.mode = InputMode::Editing,
+                    Key::Char('a') => app.mode = InputMode::Creating,
+                    Key::Char('e') => {
+                        if app.tasks.len() > 0 {
+                            if let Some(i) = app.state.selected() {
+                                app.input = app.tasks[i].description.clone();
+                                app.mode = InputMode::Editing(i);
+                            };
+                        }
+                    }
+                    Key::Char('w') => app.save(&app_path)?,
+                    Key::Esc => app.state.select(None),
                     _ => {}
                 },
-                InputMode::Editing => match key? {
+                InputMode::Creating => match key? {
                     Key::Char('\n') => {
                         let input: String = app.input.drain(..).collect();
                         if input.len() > 0 {
                             app.tasks.push(Task::from(input));
+                        };
+                        app.mode = InputMode::Normal;
+                    }
+                    Key::Char(c) => {
+                        app.input.push(c);
+                    }
+                    Key::Backspace => {
+                        app.input.pop();
+                    }
+                    Key::Esc => {
+                        app.mode = InputMode::Normal;
+                    }
+                    _ => {}
+                },
+                InputMode::Editing(i) => match key? {
+                    Key::Char('\n') => {
+                        let input: String = app.input.drain(..).collect();
+                        if input.len() > 0 {
+                            app.tasks[i] = Task::from(input);
                         };
                         app.mode = InputMode::Normal;
                     }
