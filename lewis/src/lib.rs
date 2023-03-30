@@ -97,7 +97,7 @@ impl FromStr for App {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let items = s
             .lines()
-            .map(|line| Ok::<Task, Self::Err>(line.parse::<Task>()?))
+            .map(|line| line.parse::<Task>())
             .collect::<Result<Vec<_>, _>>()?;
 
         Ok(App::from(items))
@@ -149,9 +149,7 @@ impl App {
     }
 
     pub fn toggle_task(&mut self) {
-        let len: usize = self.tasks.len();
-
-        if len > 0 {
+        if !self.tasks.is_empty() {
             if let Some(i) = self.state.selected() {
                 self.tasks[i].toggle();
             }
@@ -182,7 +180,7 @@ impl App {
             .open(&path)?
             .read_to_string(&mut data)?;
 
-        Ok(data.parse()?)
+        data.parse()
     }
 }
 
@@ -197,7 +195,7 @@ pub fn greet_lewis() -> Result<(), Box<dyn Error>> {
 a birthday present from mashrafi."
     );
 
-    if let Some(date) = NaiveDate::from_ymd_opt(2023, 03, 31) {
+    if let Some(date) = NaiveDate::from_ymd_opt(2023, 3, 31) {
         thread::sleep(Duration::from_millis(1000));
         if Local::now().date_naive() <= date {
             let text: &str = "Happy birthday, Lewis!\nHere's a program to keep track of a bucket list that I've created for us.\nAre you ready? (press enter) ";
@@ -206,11 +204,11 @@ a birthday present from mashrafi."
                 print!("{word} ");
                 io::stdout().flush()?;
 
-                thread::sleep(Duration::from_millis(word.len() as u64 * 50 as u64))
+                thread::sleep(Duration::from_millis(word.len() as u64 * 50_u64))
             }
 
-            let mut buffer: Vec<u8> = Vec::new();
-            io::stdin().read(&mut buffer)?;
+            let mut buf = [0; 1];
+            io::stdin().read_exact(&mut buf)?;
         }
     }
 
@@ -350,7 +348,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
                     Key::Char('d') => app.remove_task(),
                     Key::Char('a') => app.mode = InputMode::Creating,
                     Key::Char('e') => {
-                        if app.tasks.len() > 0 {
+                        if !app.tasks.is_empty() {
                             if let Some(i) = app.state.selected() {
                                 app.input = app.tasks[i].description.clone();
                                 app.mode = InputMode::Editing(i);
@@ -364,7 +362,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
                 InputMode::Creating => match key? {
                     Key::Char('\n') => {
                         let input: String = app.input.drain(..).collect();
-                        if input.len() > 0 {
+                        if !input.is_empty() {
                             app.tasks.push(Task::from(input));
                         };
                         app.mode = InputMode::Normal;
@@ -383,7 +381,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
                 InputMode::Editing(i) => match key? {
                     Key::Char('\n') => {
                         let input: String = app.input.drain(..).collect();
-                        if input.len() > 0 {
+                        if !input.is_empty() {
                             app.tasks[i] = Task::from(input);
                         };
                         app.mode = InputMode::Normal;

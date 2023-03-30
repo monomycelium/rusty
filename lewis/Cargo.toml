@@ -10,3 +10,8 @@ chrono = "0.4.24"
 termion = "2.0.1"
 tui = { version = "0.19.0", default-features = false, features = ["termion"] }
 
+[profile.release]
+lto = true
+panic = "abort"
+strip = true
+codegen-units = 1

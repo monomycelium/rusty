@@ -10,3 +10,4 @@ edition = "2021"
 [profile.release]
 lto = true
 panic = "abort"
+strip = true
